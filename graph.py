@@ -10,9 +10,9 @@ def moving_average(a, n=100):
 
 scores_per = np.loadtxt("scores_per.txt")
 print(len(scores_per))
-scores_ma_per = moving_average(scores_per, n=100)
+scores_ma_per = moving_average(scores_per, n=10)
 print(len(scores_ma_per))
-scores_ma_per_1000 = moving_average(scores_per, n=1000)
+scores_ma_per_1000 = moving_average(scores_per, n=100)
 print(len(scores_ma_per_1000))
 
 plt.plot(np.arange(len(scores_ma_per)), scores_ma_per,
