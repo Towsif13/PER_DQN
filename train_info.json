@@ -1,0 +1,1 @@
+{"algorithm": "PER", "eps_start": 1.0, "eps_end": 0.01, "eps_decay": 0.9995, "episodes": 10000, "train_time": "Execution time: 3 hours : 17 minutes : 52 seconds"}
