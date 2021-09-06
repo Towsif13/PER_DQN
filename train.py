@@ -9,15 +9,23 @@ import matplotlib.pyplot as plt
 from collections import namedtuple, deque
 import random
 import time
+import argparse
 
-# env = gym.make('LunarLander-v2')
-# env.seed(0)
+parser = argparse.ArgumentParser(description='Env select')
+parser.add_argument('-env', type=str, help='lunar / mount',
+                    choices=['lunar', 'mount'])
+args = parser.parse_args()
 
-
-env = gym.make('LunarLander-v2')
+if args.env == 'lunar':
+    print('LunarLander environment selected')
+    env = gym.make('LunarLander-v2')
+elif args.env == 'mount':
+    print('MountainCar environment selected')
+    env = gym.make('MountainCar-v0')
+    
 env.seed(0)
-print(env.action_space.n)
-print(env.observation_space.shape[0])
+print('Action space: '+env.action_space.n)
+print('Action observation: '+env.observation_space.shape[0])
 agent = Agent(state_size=env.observation_space.shape[0],
               action_size=env.action_space.n, seed=0)
 
@@ -70,7 +78,7 @@ def per(n_episodes=n_episodes, max_t=max_t, eps_start=eps_start, eps_end=eps_end
             max_score = np.mean(scores_window)
             print('\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}'.format(
                 i_episode-100, np.mean(scores_window)))
-            torch.save(agent.qnetwork_local.state_dict(), 'checkpoint_per.pth')
+            torch.save(agent.qnetwork_local.state_dict(), "checkpoint_per_"+str(args.env)+".pth")
     #elapsed_time = time.time() - start_time
     #print("Training duration: ", elapsed_time)
     return scores
@@ -81,7 +89,7 @@ scores = per()
 end_time = time.time()
 
 scores_per_np = np.array(scores)
-np.savetxt("scores_per.txt", scores_per_np)
+np.savetxt("scores_per_"+str(args.env)+".txt", scores_per_np)
 
 
 def convert(seconds):
@@ -99,10 +107,10 @@ train_time = convert(n)
 print(train_time)
 
 
-train_info_dictionary = {'algorithm': 'PER', 'eps_start': eps_start, 'eps_end': eps_end,
+train_info_dictionary = {'algorithm': 'PER', 'env': args.env, 'eps_start': eps_start, 'eps_end': eps_end,
                          'eps_decay': eps_decay, 'episodes': n_episodes, 'train_time': train_time}
 
-train_info_file = open('train_info.json', 'w')
+train_info_file = open('train_info_'+str(args.env)+'.json', 'w')
 json.dump(train_info_dictionary, train_info_file)
 train_info_file.close()
 
@@ -121,4 +129,4 @@ ax = fig.add_subplot(111)
 plt.plot(np.arange(len(scores_ma_per)), scores_ma_per)
 plt.ylabel('Score')
 plt.xlabel('Episode #')
-plt.savefig('graph_per.png')
+plt.savefig('graph_per_'+str(args.env)+'.png')
