@@ -24,8 +24,8 @@ elif args.env == 'mount':
     env = gym.make('MountainCar-v0')
     
 env.seed(0)
-print('Action space: '+env.action_space.n)
-print('Action observation: '+env.observation_space.shape[0])
+print('Action space: ', env.action_space.n)
+print('Action observation: ', env.observation_space.shape[0])
 agent = Agent(state_size=env.observation_space.shape[0],
               action_size=env.action_space.n, seed=0)
 
