@@ -14,6 +14,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Env select')
 parser.add_argument('-env', type=str, help='lunar / mount',
                     choices=['lunar', 'mount'])
+parser.add_argument('-seed', type=int, help='seed')
 args = parser.parse_args()
 
 if args.env == 'lunar':
@@ -22,8 +23,11 @@ if args.env == 'lunar':
 elif args.env == 'mount':
     print('MountainCar environment selected')
     env = gym.make('MountainCar-v0')
-    
-env.seed(0)
+
+s = args.seed
+print('seed ',s)
+
+env.seed(s)
 print('Action space: ', env.action_space.n)
 print('Action observation: ', env.observation_space.shape[0])
 agent = Agent(state_size=env.observation_space.shape[0],
@@ -78,7 +82,7 @@ def per(n_episodes=n_episodes, max_t=max_t, eps_start=eps_start, eps_end=eps_end
             max_score = np.mean(scores_window)
             print('\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}'.format(
                 i_episode-100, np.mean(scores_window)))
-            torch.save(agent.qnetwork_local.state_dict(), "checkpoint_per_"+str(args.env)+".pth")
+            torch.save(agent.qnetwork_local.state_dict(), "checkpoint_per_"+str(args.env)+str(args.seed)+".pth")
     #elapsed_time = time.time() - start_time
     #print("Training duration: ", elapsed_time)
     return scores
@@ -89,7 +93,7 @@ scores = per()
 end_time = time.time()
 
 scores_per_np = np.array(scores)
-np.savetxt("scores_per_"+str(args.env)+".txt", scores_per_np)
+np.savetxt("scores_per_"+str(args.env)+str(args.seed)+".txt", scores_per_np)
 
 
 def convert(seconds):
@@ -110,7 +114,7 @@ print(train_time)
 train_info_dictionary = {'algorithm': 'PER', 'env': args.env, 'eps_start': eps_start, 'eps_end': eps_end,
                          'eps_decay': eps_decay, 'episodes': n_episodes, 'train_time': train_time}
 
-train_info_file = open('train_info_'+str(args.env)+'.json', 'w')
+train_info_file = open('train_info_'+str(args.env)+str(args.seed)+'.json', 'w')
 json.dump(train_info_dictionary, train_info_file)
 train_info_file.close()
 
