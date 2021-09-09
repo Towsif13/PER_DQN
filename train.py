@@ -10,11 +10,14 @@ from collections import namedtuple, deque
 import random
 import time
 import argparse
+from open_environment import Environment as open_env
+from moving_environment import Environment as moving_env
+from maze_environment import Environment as maze
 
 parser = argparse.ArgumentParser(description='Env select')
 parser.add_argument('-env', type=str, help='lunar / mount',
-                    choices=['lunar', 'mount'])
-parser.add_argument('-seed', type=int, help='seed')
+                    choices=['lunar', 'mount', 'open', 'moving', 'maze'])
+# parser.add_argument('-seed', type=int, help='seed')
 args = parser.parse_args()
 
 if args.env == 'lunar':
@@ -23,21 +26,41 @@ if args.env == 'lunar':
 elif args.env == 'mount':
     print('MountainCar environment selected')
     env = gym.make('MountainCar-v0')
+elif args.env == 'open':
+    print('Open grid environment selected')
+    env = open_env()
+elif args.env == 'moving':
+    print('Moving target environment selected')
+    env = moving_env()
+elif args.env == 'maze':
+    print('Maze environment selected')
+    env = maze()
 
-s = args.seed
-print('seed ',s)
+# s = args.seed
+# print('seed ', s)
 
-env.seed(s)
-print('Action space: ', env.action_space.n)
-print('Action observation: ', env.observation_space.shape[0])
-agent = Agent(state_size=env.observation_space.shape[0],
-              action_size=env.action_space.n, seed=0)
+# env.seed(s)
+# print('Action space: ', env.action_space.n)
+# print('Action observation: ', env.observation_space.shape[0])
+# agent = Agent(state_size=env.observation_space.shape[0],
+#               action_size=env.action_space.n, seed=0)
 
-n_episodes = 10_000
+# n_episodes = 10_000
+# max_t = 200
+# eps_start = 1.0
+# eps_end = 0.01
+# eps_decay = 0.9995
+
+
+############### for grid world only ######################
+agent = Agent(state_size=2, action_size=4, seed=3)
+
+n_episodes = 100_000
 max_t = 200
 eps_start = 1.0
 eps_end = 0.01
-eps_decay = 0.9995
+eps_decay = 0.99995  # 0.999936
+############### for grid world only ######################
 
 
 def per(n_episodes=n_episodes, max_t=max_t, eps_start=eps_start, eps_end=eps_end, eps_decay=eps_decay):
@@ -60,9 +83,9 @@ def per(n_episodes=n_episodes, max_t=max_t, eps_start=eps_start, eps_end=eps_end
         state = env.reset()
         score = 0
         for t in range(max_t):
-            # env.render()
+            env.render()
             action = agent.act(state, eps)
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, done = env.step(action)
             agent.step(state, action, reward, next_state, done)
             state = next_state
             score += reward
@@ -82,7 +105,8 @@ def per(n_episodes=n_episodes, max_t=max_t, eps_start=eps_start, eps_end=eps_end
             max_score = np.mean(scores_window)
             print('\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}'.format(
                 i_episode-100, np.mean(scores_window)))
-            torch.save(agent.qnetwork_local.state_dict(), "checkpoint_per_"+str(args.env)+str(args.seed)+".pth")
+            torch.save(agent.qnetwork_local.state_dict(),
+                       "checkpoint_per_"+str(args.env)+".pth")
     #elapsed_time = time.time() - start_time
     #print("Training duration: ", elapsed_time)
     return scores
@@ -93,7 +117,7 @@ scores = per()
 end_time = time.time()
 
 scores_per_np = np.array(scores)
-np.savetxt("scores_per_"+str(args.env)+str(args.seed)+".txt", scores_per_np)
+np.savetxt("scores_per_"+str(args.env)+".txt", scores_per_np)
 
 
 def convert(seconds):
@@ -114,7 +138,7 @@ print(train_time)
 train_info_dictionary = {'algorithm': 'PER', 'env': args.env, 'eps_start': eps_start, 'eps_end': eps_end,
                          'eps_decay': eps_decay, 'episodes': n_episodes, 'train_time': train_time}
 
-train_info_file = open('train_info_'+str(args.env)+str(args.seed)+'.json', 'w')
+train_info_file = open('train_info_'+str(args.env)+'.json', 'w')
 json.dump(train_info_dictionary, train_info_file)
 train_info_file.close()
 
